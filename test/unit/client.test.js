@@ -1067,3 +1067,77 @@ test('Correctly handles the same header cased differently', t => {
     })
   })
 })
+
+test('Random selector', t => {
+  t.plan(2)
+
+  function handler (req, res) {
+    res.setHeader('Content-Type', 'application/json;utf=8')
+    res.end(JSON.stringify({ hello: 'world' }))
+  }
+
+  buildServer(handler, ({ port }, server) => {
+    const client = new Client({
+      node: `http://localhost:${port}`,
+      nodeSelector: 'random'
+    })
+
+    client.search({
+      index: 'test',
+      q: 'foo:bar'
+    }, (err, { body }) => {
+      t.error(err)
+      t.deepEqual(body, { hello: 'world' })
+      server.stop()
+    })
+  })
+})
+
+test('Disable keep alive agent', t => {
+  t.plan(3)
+
+  function handler (req, res) {
+    t.strictEqual(req.headers.connection, 'close')
+    res.setHeader('Content-Type', 'application/json;utf=8')
+    res.end(JSON.stringify({ hello: 'world' }))
+  }
+
+  buildServer(handler, ({ port }, server) => {
+    const client = new Client({
+      node: `http://localhost:${port}`,
+      agent: false
+    })
+
+    client.search({
+      index: 'test',
+      q: 'foo:bar'
+    }, (err, { body }) => {
+      t.error(err)
+      t.deepEqual(body, { hello: 'world' })
+      server.stop()
+    })
+  })
+})
+
+test('name property as string', t => {
+  t.plan(1)
+
+  const client = new Client({
+    node: 'http://localhost:9200',
+    name: 'client-name'
+  })
+
+  t.strictEqual(client.name, 'client-name')
+})
+
+test('name property as symbol', t => {
+  t.plan(1)
+
+  const symbol = Symbol('client-name')
+  const client = new Client({
+    node: 'http://localhost:9200',
+    name: symbol
+  })
+
+  t.strictEqual(client.name, symbol)
+})

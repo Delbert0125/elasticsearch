@@ -96,6 +96,16 @@ const b = client.helpers.bulk({
 })
 ----
 
+|`flushInterval`
+a|How much time (in milliseconds) the helper will wait before flushing the body from the last document read. +
+_Default:_ `30000`
+[source,js]
+----
+const b = client.helpers.bulk({
+  flushInterval: 30000
+})
+----
+
 |`concurrency`
 a|How many request will be executed at the same time. +
 _Default:_ `5`
@@ -139,6 +149,64 @@ const b = client.helpers.bulk({
 ----
 
 |===
+
+==== Supported operations
+
+===== Index
+[source,js]
+----
+client.helpers.bulk({
+  datasource: myDatasource,
+  onDocument (doc) {
+    return {
+      index: { _index: 'my-index' }
+    }
+  }
+})
+----
+
+===== Create
+[source,js]
+----
+client.helpers.bulk({
+  datasource: myDatasource,
+  onDocument (doc) {
+    return {
+      create: { _index: 'my-index', _id: doc.id }
+    }
+  }
+})
+----
+
+===== Update
+[source,js]
+----
+client.helpers.bulk({
+  datasource: myDatasource,
+  onDocument (doc) {
+    // Note that the update operation requires you to return
+    // an array, where the first element is the actio, while
+    // the second are the document option
+    return [
+      { update: { _index: 'my-index', _id: doc.id } },
+      { doc_as_upsert: true }
+    ]
+  }
+})
+----
+
+===== Delete
+[source,js]
+----
+client.helpers.bulk({
+  datasource: myDatasource,
+  onDocument (doc) {
+    return {
+      delete: { _index: 'my-index', _id: doc.id }
+    }
+  }
+})
+----
 
 ==== Abort a bulk operation
 If needed, you can abort a bulk operation at any time. The bulk helper returns a https://promisesaplus.com/[thenable], which has an `abort` method.
@@ -228,10 +296,10 @@ The `result` exposes a `documents` property as well, which allows you to access 
 const { Client } = require('@elastic/elasticsearch')
 
 const client = new Client({ node: 'http://localhost:9200' })
-const s = client.helpers.msearch()
+const m = client.helpers.msearch()
 
 // promise style API
-s.search(
+m.search(
     { index: 'stackoverflow' },
     { query: { match: { title: 'javascript' } } }
   )
@@ -239,7 +307,7 @@ s.search(
   .catch(err => console.error(err))
 
 // callback style API
-s.search(
+m.search(
   { index: 'stackoverflow' },
   { query: { match: { title: 'ruby' } } },
   (err, result) => {
@@ -254,11 +322,21 @@ To create a new instance of the Msearch helper, you should access it as shown in
 |===
 |`operations`
 a|How many search operations should be sent in a single msearch request. +
-_Default:_ `20`
+_Default:_ `5`
 [source,js]
 ----
-const b = client.helpers.msearch({
+const m = client.helpers.msearch({
   operations: 10
+})
+----
+
+|`flushInterval`
+a|How much time (in milliseconds) the helper will wait before flushing the operations from the last operation read. +
+_Default:_ `500`
+[source,js]
+----
+const m = client.helpers.msearch({
+  flushInterval: 500
 })
 ----
 
@@ -267,7 +345,7 @@ a|How many request will be executed at the same time. +
 _Default:_ `5`
 [source,js]
 ----
-const b = client.helpers.msearch({
+const m = client.helpers.msearch({
   concurrency: 10
 })
 ----
@@ -277,7 +355,7 @@ a|How many times an operation will be retried before to resolve the request. An 
 _Default:_ Client max retries.
 [source,js]
 ----
-const b = client.helpers.msearch({
+const m = client.helpers.msearch({
   retries: 3
 })
 ----
@@ -287,7 +365,7 @@ a|How much time to wait before retries in milliseconds. +
 _Default:_ 5000.
 [source,js]
 ----
-const b = client.helpers.msearch({
+const m = client.helpers.msearch({
   wait: 3000
 })
 ----
@@ -308,23 +386,23 @@ NOTE: The stop method will stop the execution of the msearch processor, but if y
 const { Client } = require('@elastic/elasticsearch')
 
 const client = new Client({ node: 'http://localhost:9200' })
-const s = client.helpers.msearch()
+const m = client.helpers.msearch()
 
-s.search(
+m.search(
     { index: 'stackoverflow' },
     { query: { match: { title: 'javascript' } } }
   )
   .then(result => console.log(result.body))
   .catch(err => console.error(err))
 
-s.search(
+m.search(
     { index: 'stackoverflow' },
     { query: { match: { title: 'ruby' } } }
   )
   .then(result => console.log(result.body))
   .catch(err => console.error(err))
 
-setImmediate(() => s.stop())
+setImmediate(() => m.stop())
 ----
 
 === Search Helper
@@ -361,7 +439,7 @@ It handles automatically the `429` error and uses the client's `maxRetries` opti
 
 [source,js]
 ----
-const scrollSearch = await client.helpers.scrollSearch({
+const scrollSearch = client.helpers.scrollSearch({
   index: 'stackoverflow',
   body: {
     query: {
@@ -410,7 +488,7 @@ For improving the performances, this helper automatically adds `filter_path=hits
 
 [source,js]
 ----
-const scrollSearch = await client.helpers.scrollDocuments({
+const scrollSearch = client.helpers.scrollDocuments({
   index: 'stackoverflow',
   body: {
     query: {

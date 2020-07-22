@@ -12,11 +12,15 @@ function buildEqlSearch (opts) {
   const { makeRequest, ConfigurationError, handleError, snakeCaseKeys } = opts
 
   const acceptedQuerystring = [
-
+    'wait_for_completion_timeout',
+    'keep_on_completion',
+    'keep_alive'
   ]
 
   const snakeCase = {
-
+    waitForCompletionTimeout: 'wait_for_completion_timeout',
+    keepOnCompletion: 'keep_on_completion',
+    keepAlive: 'keep_alive'
   }
 
   /**

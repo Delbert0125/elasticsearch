@@ -1,7 +1,7 @@
 'use strict'
 
 const { test } = require('tap')
-const lolex = require('lolex')
+const FakeTimers = require('@sinonjs/fake-timers')
 const { Client, Transport } = require('../../index')
 const {
   connection: { MockConnection, MockConnectionSniff }
@@ -125,7 +125,7 @@ test('Request id', t => {
   t.test('Resurrect should use the same request id of the request that starts it', t => {
     t.plan(2)
 
-    const clock = lolex.install({ toFake: ['Date'] })
+    const clock = FakeTimers.install({ toFake: ['Date'] })
     const client = new Client({
       node: 'http://localhost:9200',
       Connection: MockConnection,
@@ -192,6 +192,50 @@ test('Request context', t => {
     client.info({}, { context: { winter: 'is coming' } }, t.error)
   })
 
+  t.test('global value', t => {
+    t.plan(5)
+
+    const client = new Client({
+      node: 'http://localhost:9200',
+      Connection: MockConnection,
+      context: { winter: 'is coming' }
+    })
+
+    client.on('request', (err, { meta }) => {
+      t.error(err)
+      t.deepEqual(meta.context, { winter: 'is coming' })
+    })
+
+    client.on('response', (err, { meta }) => {
+      t.error(err)
+      t.deepEqual(meta.context, { winter: 'is coming' })
+    })
+
+    client.info(t.error)
+  })
+
+  t.test('override global', t => {
+    t.plan(5)
+
+    const client = new Client({
+      node: 'http://localhost:9200',
+      Connection: MockConnection,
+      context: { winter: 'is coming' }
+    })
+
+    client.on('request', (err, { meta }) => {
+      t.error(err)
+      t.deepEqual(meta.context, { winter: 'has come' })
+    })
+
+    client.on('response', (err, { meta }) => {
+      t.error(err)
+      t.deepEqual(meta.context, { winter: 'has come' })
+    })
+
+    client.info({}, { context: { winter: 'has come' } }, t.error)
+  })
+
   t.end()
 })
 
@@ -205,7 +249,7 @@ test('Client name', t => {
     t.end()
   })
 
-  t.test('Is present in the event metadata', t => {
+  t.test('Is present in the event metadata (as string)', t => {
     t.plan(6)
     const client = new Client({
       node: 'http://localhost:9200',
@@ -226,6 +270,31 @@ test('Client name', t => {
     client.info((err, { meta }) => {
       t.error(err)
       t.strictEqual(meta.name, 'cluster')
+    })
+  })
+
+  t.test('Is present in the event metadata (as symbol)', t => {
+    t.plan(6)
+    const symbol = Symbol('cluster')
+    const client = new Client({
+      node: 'http://localhost:9200',
+      Connection: MockConnection,
+      name: symbol
+    })
+
+    client.on('request', (err, { meta }) => {
+      t.error(err)
+      t.strictEqual(meta.name, symbol)
+    })
+
+    client.on('response', (err, { meta }) => {
+      t.error(err)
+      t.strictEqual(meta.name, symbol)
+    })
+
+    client.info((err, { meta }) => {
+      t.error(err)
+      t.strictEqual(meta.name, symbol)
     })
   })
 
@@ -281,7 +350,7 @@ test('Client name', t => {
   t.test('Resurrect should have the client name configured', t => {
     t.plan(2)
 
-    const clock = lolex.install({ toFake: ['Date'] })
+    const clock = FakeTimers.install({ toFake: ['Date'] })
     const client = new Client({
       node: 'http://localhost:9200',
       Connection: MockConnection,
@@ -305,7 +374,7 @@ test('Client name', t => {
   t.test('Resurrect should have the client name configured (child client)', t => {
     t.plan(2)
 
-    const clock = lolex.install({ toFake: ['Date'] })
+    const clock = FakeTimers.install({ toFake: ['Date'] })
     const client = new Client({
       node: 'http://localhost:9200',
       Connection: MockConnection,

@@ -14,6 +14,7 @@ import {
   TransportRequestParams,
   TransportRequestOptions,
   TransportRequestCallback,
+  TransportRequestPromise,
   RequestEvent,
   ApiError,
   RequestBody,
@@ -102,6 +103,16 @@ expectType<Transport>(transport)
 
 expectType<TransportRequestCallback>(transport.request(params, options, (err, result) => {}))
 
+// querystring as string
+transport.request({
+  method: 'GET',
+  path: '/search',
+  querystring: 'baz=faz'
+}, options, (err, result) => {
+  expectType<ApiError>(err)
+  expectType<ApiResponse>(result)
+})
+
 // body as object
 transport.request(params, options, (err, result) => {
   expectType<ApiError>(err)
@@ -142,7 +153,7 @@ transport.request({
 })
 
 const promise = transport.request(params, options)
-expectType<Promise<ApiResponse>>(promise)
+expectType<TransportRequestPromise<ApiResponse>>(promise)
 promise.then(result => expectType<ApiResponse>(result))
 expectType<ApiResponse>(await promise)
 

@@ -12,7 +12,7 @@ import {
   OnDropDocument,
   MsearchHelper
 } from '../../lib/Helpers'
-import { ApiResponse, ApiError } from '../../lib/Transport'
+import { ApiResponse, ApiError, Context } from '../../lib/Transport'
 
 const client = new Client({
   node: 'http://localhost:9200'
@@ -27,6 +27,7 @@ const b = client.helpers.bulk<Record<string, any>>({
     return { index: { _index: 'test' } }
   },
   flushBytes: 5000000,
+  flushInterval: 30000,
   concurrency: 5,
   retries: 3,
   wait: 5000,
@@ -58,7 +59,7 @@ expectError(
   const options = {
     datasource: [],
     onDocument (doc: Record<string, any>) {
-      return { index: { _index: 'test' } } 
+      return { index: { _index: 'test' } }
     }
   }
   expectAssignable<BulkHelperOptions<Record<string, any>>>(options)
@@ -133,26 +134,26 @@ expectError(
       expectAssignable<ScrollSearchResponse>(response)
       expectType<Record<string, any>>(response.body)
       expectType<unknown[]>(response.documents)
-      expectType<unknown>(response.meta.context)
+      expectType<Context>(response.meta.context)
     }
   }
 }
 
 // with type defs
-{  
+{
   interface ShardsResponse {
     total: number;
     successful: number;
     failed: number;
     skipped: number;
   }
-  
+
   interface Explanation {
     value: number;
     description: string;
     details: Explanation[];
   }
-  
+
   interface SearchResponse<T> {
     took: number;
     timed_out: boolean;
@@ -178,7 +179,7 @@ expectError(
     };
     aggregations?: any;
   }
-  
+
   interface Source {
     foo: string
   }
@@ -197,7 +198,7 @@ expectError(
       expectAssignable<ScrollSearchResponse>(response)
       expectType<SearchResponse<Source>>(response.body)
       expectType<Source[]>(response.documents)
-      expectType<unknown>(response.meta.context)
+      expectType<Context>(response.meta.context)
     }
   }
 }
@@ -208,20 +209,20 @@ expectError(
       match: { foo: string }
     }
   }
-  
+
   interface ShardsResponse {
     total: number;
     successful: number;
     failed: number;
     skipped: number;
   }
-  
+
   interface Explanation {
     value: number;
     description: string;
     details: Explanation[];
   }
-  
+
   interface SearchResponse<T> {
     took: number;
     timed_out: boolean;
@@ -247,13 +248,13 @@ expectError(
     };
     aggregations?: any;
   }
-  
+
   interface Source {
     foo: string
   }
 
   async function test () {
-    const scrollSearch = client.helpers.scrollSearch<Source, SearchResponse<Source>, SearchBody, string>({
+    const scrollSearch = client.helpers.scrollSearch<Source, SearchResponse<Source>, SearchBody, Record<string, unknown>>({
       index: 'test',
       body: {
         query: {
@@ -266,7 +267,7 @@ expectError(
       expectAssignable<ScrollSearchResponse>(response)
       expectType<SearchResponse<Source>>(response.body)
       expectType<Source[]>(response.documents)
-      expectType<string>(response.meta.context)
+      expectType<Record<string, unknown>>(response.meta.context)
     }
   }
 }
@@ -310,7 +311,7 @@ expectError(
 }
 
 // with type defs
-{ 
+{
   interface Source {
     foo: string
   }
@@ -337,7 +338,7 @@ expectError(
       match: { foo: string }
     }
   }
-  
+
   interface Source {
     foo: string
   }
@@ -415,7 +416,7 @@ expectError(
       match: { foo: string }
     }
   }
-  
+
   interface Source {
     foo: string
   }
@@ -436,7 +437,8 @@ expectError(
 /// .helpers.msearch
 
 const s = client.helpers.msearch({
-  operations: 20,
+  operations: 5,
+  flushInterval: 500,
   concurrency: 5,
   retries: 5,
   wait: 5000
