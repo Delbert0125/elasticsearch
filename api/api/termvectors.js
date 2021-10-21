@@ -35,19 +35,13 @@ function termvectorsApi (params, options, callback) {
     return handleError(err, callback)
   }
 
-  let { method, body, index, id, type, ...querystring } = params
+  let { method, body, index, id, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null && (id) != null) {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + encodeURIComponent(id) + '/' + '_termvectors'
-  } else if ((index) != null && (id) != null) {
+  if ((index) != null && (id) != null) {
     if (method == null) method = body == null ? 'GET' : 'POST'
     path = '/' + encodeURIComponent(index) + '/' + '_termvectors' + '/' + encodeURIComponent(id)
-  } else if ((index) != null && (type) != null) {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + '_termvectors'
   } else {
     if (method == null) method = body == null ? 'GET' : 'POST'
     path = '/' + encodeURIComponent(index) + '/' + '_termvectors'

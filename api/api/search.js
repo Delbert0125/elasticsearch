@@ -29,20 +29,11 @@ const snakeCase = { analyzeWildcard: 'analyze_wildcard', ccsMinimizeRoundtrips: 
 function searchApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
-  // check required url components
-  if (params.type != null && (params.index == null)) {
-    const err = new this[kConfigurationError]('Missing required parameter of the url: index')
-    return handleError(err, callback)
-  }
-
-  let { method, body, index, type, ...querystring } = params
+  let { method, body, index, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null) {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + '_search'
-  } else if ((index) != null) {
+  if ((index) != null) {
     if (method == null) method = body == null ? 'GET' : 'POST'
     path = '/' + encodeURIComponent(index) + '/' + '_search'
   } else {

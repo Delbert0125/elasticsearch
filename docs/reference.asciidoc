@@ -201,7 +201,7 @@ client.asyncSearch.submit({
   suggest_text: string,
   timeout: string,
   track_scores: boolean,
-  track_total_hits: boolean,
+  track_total_hits: boolean|long,
   allow_partial_search_results: boolean,
   typed_keys: boolean,
   version: boolean,
@@ -328,7 +328,7 @@ _Default:_ `missing`
 |`boolean` - Whether to calculate and return scores even if they are not used for sorting
 
 |`track_total_hits` or `trackTotalHits`
-|`boolean` - Indicate if the number of documents that match the query should be tracked
+|`boolean\|long` - Indicate if the number of documents that match the query should be tracked. A number can also be specified, to accurately track the total hit count up to the number.
 
 |`allow_partial_search_results` or `allowPartialSearchResults`
 |`boolean` - Indicate if an error should be returned if there is a partial search failure or timeout +
@@ -724,7 +724,6 @@ client.cat.indices({
   index: string | string[],
   format: string,
   bytes: 'b' | 'k' | 'kb' | 'm' | 'mb' | 'g' | 'gb' | 't' | 'tb' | 'p' | 'pb',
-  local: boolean,
   master_timeout: string,
   h: string | string[],
   health: 'green' | 'yellow' | 'red',
@@ -748,11 +747,6 @@ link:{ref}/cat-indices.html[Documentation] +
 
 |`bytes`
 |`'b' \| 'k' \| 'kb' \| 'm' \| 'mb' \| 'g' \| 'gb' \| 't' \| 'tb' \| 'p' \| 'pb'` - The unit in which to display byte values
-
-|`local`
-|`boolean` - Return local information, do not retrieve the state from master node (default: false) +
-
-WARNING: This parameter has been deprecated.
 
 |`master_timeout` or `masterTimeout`
 |`string` - Explicit operation timeout for connection to master node
@@ -1092,7 +1086,6 @@ client.cat.nodes({
   bytes: 'b' | 'k' | 'kb' | 'm' | 'mb' | 'g' | 'gb' | 't' | 'tb' | 'p' | 'pb',
   format: string,
   full_id: boolean,
-  local: boolean,
   master_timeout: string,
   h: string | string[],
   help: boolean,
@@ -1113,11 +1106,6 @@ link:{ref}/cat-nodes.html[Documentation] +
 
 |`full_id` or `fullId`
 |`boolean` - Return the full node ID instead of the shortened version (default: false)
-
-|`local`
-|`boolean` - Calculate the selected nodes using the local cluster state rather than the state from master node (default: false) +
-
-WARNING: This parameter has been deprecated.
 
 |`master_timeout` or `masterTimeout`
 |`string` - Explicit operation timeout for connection to master node
@@ -1376,7 +1364,6 @@ client.cat.shards({
   index: string | string[],
   format: string,
   bytes: 'b' | 'k' | 'kb' | 'm' | 'mb' | 'g' | 'gb' | 't' | 'tb' | 'p' | 'pb',
-  local: boolean,
   master_timeout: string,
   h: string | string[],
   help: boolean,
@@ -1396,11 +1383,6 @@ link:{ref}/cat-shards.html[Documentation] +
 
 |`bytes`
 |`'b' \| 'k' \| 'kb' \| 'm' \| 'mb' \| 'g' \| 'gb' \| 't' \| 'tb' \| 'p' \| 'pb'` - The unit in which to display byte values
-
-|`local`
-|`boolean` - Return local information, do not retrieve the state from master node (default: false) +
-
-WARNING: This parameter has been deprecated.
 
 |`master_timeout` or `masterTimeout`
 |`string` - Explicit operation timeout for connection to master node
@@ -1473,7 +1455,7 @@ link:{ref}/cat-snapshots.html[Documentation] +
 
 [discrete]
 === cat.tasks
-
+*Stability:* experimental
 [source,ts]
 ----
 client.cat.tasks({
@@ -1577,7 +1559,7 @@ link:{ref}/cat-templates.html[Documentation] +
 client.cat.threadPool({
   thread_pool_patterns: string | string[],
   format: string,
-  size: '' | 'k' | 'm' | 'g' | 't' | 'p',
+  time: 'd' | 'h' | 'm' | 's' | 'ms' | 'micros' | 'nanos',
   local: boolean,
   master_timeout: string,
   h: string | string[],
@@ -1595,10 +1577,8 @@ link:{ref}/cat-thread-pool.html[Documentation] +
 |`format`
 |`string` - a short version of the Accept header, e.g. json, yaml
 
-|`size`
-|`'' \| 'k' \| 'm' \| 'g' \| 't' \| 'p'` - The multiplier in which to display values +
-
-WARNING: This parameter has been deprecated.
+|`time`
+|`'d' \| 'h' \| 'm' \| 's' \| 'ms' \| 'micros' \| 'nanos'` - The unit in which to display time values
 
 |`local`
 |`boolean` - Return local information, do not retrieve the state from master node (default: false)
@@ -2112,7 +2092,8 @@ client.cluster.health({
   wait_for_events: 'immediate' | 'urgent' | 'high' | 'normal' | 'low' | 'languid',
   wait_for_no_relocating_shards: boolean,
   wait_for_no_initializing_shards: boolean,
-  wait_for_status: 'green' | 'yellow' | 'red'
+  wait_for_status: 'green' | 'yellow' | 'red',
+  return_200_for_cluster_health_timeout: boolean
 })
 ----
 link:{ref}/cluster-health.html[Documentation] +
@@ -2155,6 +2136,9 @@ _Default:_ `cluster`
 
 |`wait_for_status` or `waitForStatus`
 |`'green' \| 'yellow' \| 'red'` - Wait until cluster is in a specific state
+
+|`return_200_for_cluster_health_timeout` or `return_200ForClusterHealthTimeout`
+|`boolean` - Whether to return HTTP 200 instead of 408 in case of a cluster health timeout from the server side
 
 |===
 
@@ -2404,7 +2388,6 @@ link:{ref}/cluster-stats.html[Documentation] +
 ----
 client.count({
   index: string | string[],
-  type: string | string[],
   ignore_unavailable: boolean,
   ignore_throttled: boolean,
   allow_no_indices: boolean,
@@ -2427,9 +2410,6 @@ link:{ref}/search-count.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of indices to restrict the results
-
-|`type`
-|`string \| string[]` - A comma-separated list of types to restrict the results
 
 |`ignore_unavailable` or `ignoreUnavailable`
 |`boolean` - Whether specified concrete indices should be ignored when unavailable (missing or closed)
@@ -2623,7 +2603,7 @@ client.delete({
   if_seq_no: number,
   if_primary_term: number,
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force'
+  version_type: 'internal' | 'external' | 'external_gte'
 })
 ----
 link:{ref}/docs-delete.html[Documentation] +
@@ -2662,7 +2642,7 @@ WARNING: This parameter has been deprecated.
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |===
 
@@ -2673,7 +2653,6 @@ WARNING: This parameter has been deprecated.
 ----
 client.deleteByQuery({
   index: string | string[],
-  type: string | string[],
   analyzer: string,
   analyze_wildcard: boolean,
   default_operator: 'AND' | 'OR',
@@ -2690,7 +2669,6 @@ client.deleteByQuery({
   scroll: string,
   search_type: 'query_then_fetch' | 'dfs_query_then_fetch',
   search_timeout: string,
-  size: number,
   max_docs: number,
   sort: string | string[],
   _source: string | string[],
@@ -2715,9 +2693,6 @@ link:{ref}/docs-delete-by-query.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to search; leave empty to perform the operation on all types
 
 |`analyzer`
 |`string` - The analyzer to use for the query string
@@ -2770,9 +2745,6 @@ _Default:_ `open`
 |`search_timeout` or `searchTimeout`
 |`string` - Explicit timeout for each search request. Defaults to no timeout.
 
-|`size`
-|`number` - Deprecated, please use `max_docs` instead
-
 |`max_docs` or `maxDocs`
 |`number` - Maximum number of documents to process (default: all documents)
 
@@ -2801,7 +2773,7 @@ _Default:_ `open`
 |`boolean` - Specify if request cache should be used for this request or not, defaults to index level setting
 
 |`refresh`
-|`boolean` - Should the effected indexes be refreshed?
+|`boolean` - Should the affected indexes be refreshed?
 
 |`timeout`
 |`string` - Time each individual bulk request should wait for shards that are unavailable. +
@@ -3065,7 +3037,6 @@ _Default:_ `5d`
 client.exists({
   id: string,
   index: string,
-  type: string,
   stored_fields: string | string[],
   preference: string,
   realtime: boolean,
@@ -3075,7 +3046,7 @@ client.exists({
   _source_excludes: string | string[],
   _source_includes: string | string[],
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force'
+  version_type: 'internal' | 'external' | 'external_gte'
 })
 ----
 link:{ref}/docs-get.html[Documentation] +
@@ -3087,11 +3058,6 @@ link:{ref}/docs-get.html[Documentation] +
 
 |`index`
 |`string` - The name of the index
-
-|`type`
-|`string` - The type of the document (use `_all` to fetch the first document matching the ID across all types) +
-
-WARNING: This parameter has been deprecated.
 
 |`stored_fields` or `storedFields`
 |`string \| string[]` - A comma-separated list of stored fields to return in the response
@@ -3121,7 +3087,7 @@ WARNING: This parameter has been deprecated.
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |===
 
@@ -3142,7 +3108,7 @@ client.existsSource({
   _source_excludes: string | string[],
   _source_includes: string | string[],
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force'
+  version_type: 'internal' | 'external' | 'external_gte'
 })
 ----
 link:{ref}/docs-get.html[Documentation] +
@@ -3184,7 +3150,7 @@ WARNING: This parameter has been deprecated.
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |===
 
@@ -3196,7 +3162,6 @@ WARNING: This parameter has been deprecated.
 client.explain({
   id: string,
   index: string,
-  type: string,
   analyze_wildcard: boolean,
   analyzer: string,
   default_operator: 'AND' | 'OR',
@@ -3220,11 +3185,6 @@ link:{ref}/search-explain.html[Documentation] +
 
 |`index`
 |`string` - The name of the index
-
-|`type`
-|`string` - The type of the document +
-
-WARNING: This parameter has been deprecated.
 
 |`analyze_wildcard` or `analyzeWildcard`
 |`boolean` - Specify whether wildcards and prefix queries in the query string query should be analyzed (default: false)
@@ -3339,7 +3299,7 @@ _Default:_ `open`
 
 [discrete]
 === fleet.globalCheckpoints
-*Stability:* experimental
+
 [source,ts]
 ----
 client.fleet.globalCheckpoints({
@@ -3350,6 +3310,7 @@ client.fleet.globalCheckpoints({
   timeout: string
 })
 ----
+link:{ref}/get-global-checkpoints.html[Documentation] +
 [cols=2*]
 |===
 |`index`
@@ -3373,6 +3334,59 @@ _Default:_ `30s`
 |===
 
 [discrete]
+=== fleet.msearch
+*Stability:* experimental
+[source,ts]
+----
+client.fleet.msearch({
+  index: string,
+  body: object
+})
+----
+[cols=2*]
+|===
+|`index`
+|`string` - The index name to use as the default
+
+|`body`
+|`object` - The request definitions (metadata-fleet search request definition pairs), separated by newlines
+
+|===
+
+[discrete]
+=== fleet.search
+*Stability:* experimental
+[source,ts]
+----
+client.fleet.search({
+  index: string,
+  wait_for_checkpoints: string | string[],
+  wait_for_checkpoints_timeout: string,
+  allow_partial_search_results: boolean,
+  body: object
+})
+----
+[cols=2*]
+|===
+|`index`
+|`string` - The index name to search.
+
+|`wait_for_checkpoints` or `waitForCheckpoints`
+|`string \| string[]` - Comma separated list of checkpoints, one per shard
+
+|`wait_for_checkpoints_timeout` or `waitForCheckpointsTimeout`
+|`string` - Explicit wait_for_checkpoints timeout
+
+|`allow_partial_search_results` or `allowPartialSearchResults`
+|`boolean` - Indicate if an error should be returned if there is a partial search failure or timeout +
+_Default:_ `true`
+
+|`body`
+|`object` - The search definition using the Query DSL
+
+|===
+
+[discrete]
 === get
 
 [source,ts]
@@ -3380,7 +3394,6 @@ _Default:_ `30s`
 client.get({
   id: string,
   index: string,
-  type: string,
   stored_fields: string | string[],
   preference: string,
   realtime: boolean,
@@ -3390,7 +3403,7 @@ client.get({
   _source_excludes: string | string[],
   _source_includes: string | string[],
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force'
+  version_type: 'internal' | 'external' | 'external_gte'
 })
 ----
 link:{ref}/docs-get.html[Documentation] +
@@ -3402,11 +3415,6 @@ link:{ref}/docs-get.html[Documentation] +
 
 |`index`
 |`string` - The name of the index
-
-|`type`
-|`string` - The type of the document (use `_all` to fetch the first document matching the ID across all types) +
-
-WARNING: This parameter has been deprecated.
 
 |`stored_fields` or `storedFields`
 |`string \| string[]` - A comma-separated list of stored fields to return in the response
@@ -3436,7 +3444,7 @@ WARNING: This parameter has been deprecated.
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |===
 
@@ -3463,7 +3471,7 @@ link:{ref}/modules-scripting.html[Documentation] +
 
 [discrete]
 === getScriptContext
-*Stability:* experimental
+
 [source,ts]
 ----
 client.getScriptContext()
@@ -3473,7 +3481,7 @@ link:https://www.elastic.co/guide/en/elasticsearch/painless/master/painless-cont
 
 [discrete]
 === getScriptLanguages
-*Stability:* experimental
+
 [source,ts]
 ----
 client.getScriptLanguages()
@@ -3489,7 +3497,6 @@ link:{ref}/modules-scripting.html[Documentation] +
 client.getSource({
   id: string,
   index: string,
-  type: string,
   preference: string,
   realtime: boolean,
   refresh: boolean,
@@ -3498,7 +3505,7 @@ client.getSource({
   _source_excludes: string | string[],
   _source_includes: string | string[],
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force'
+  version_type: 'internal' | 'external' | 'external_gte'
 })
 ----
 link:{ref}/docs-get.html[Documentation] +
@@ -3509,11 +3516,6 @@ link:{ref}/docs-get.html[Documentation] +
 
 |`index`
 |`string` - The name of the index
-
-|`type`
-|`string` - The type of the document; deprecated and optional starting with 7.0 +
-
-WARNING: This parameter has been deprecated.
 
 |`preference`
 |`string` - Specify the node or shard the operation should be performed on (default: random)
@@ -3540,7 +3542,7 @@ WARNING: This parameter has been deprecated.
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |===
 
@@ -3551,7 +3553,6 @@ WARNING: This parameter has been deprecated.
 ----
 client.graph.explore({
   index: string | string[],
-  type: string | string[],
   routing: string,
   timeout: string,
   body: object
@@ -3562,11 +3563,6 @@ link:{ref}/graph-explore-api.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to search; leave empty to perform the operation on all types +
-
-WARNING: This parameter has been deprecated.
 
 |`routing`
 |`string` - Specific routing value
@@ -3773,7 +3769,6 @@ link:{ref}/ilm-stop.html[Documentation] +
 client.index({
   id: string,
   index: string,
-  type: string,
   wait_for_active_shards: string,
   op_type: 'index' | 'create',
   refresh: 'true' | 'false' | 'wait_for',
@@ -3796,11 +3791,6 @@ link:{ref}/docs-index_.html[Documentation] +
 
 |`index`
 |`string` - The name of the index
-
-|`type`
-|`string` - The type of the document +
-
-WARNING: This parameter has been deprecated.
 
 |`wait_for_active_shards` or `waitForActiveShards`
 |`string` - Sets the number of shard copies that must be active before proceeding with the index operation. Defaults to 1, meaning the primary shard only. Set to `all` for all shard copies, otherwise set to any non-negative value less than or equal to the total number of copies for the shard (number of replicas + 1)
@@ -4024,7 +4014,7 @@ link:{ref}/indices-open-close.html[Documentation] +
 _Default:_ `open`
 
 |`wait_for_active_shards` or `waitForActiveShards`
-|`string` - Sets the number of active shards to wait for before the operation returns. Set to `index-setting` to wait according to the index setting `index.write.wait_for_active_shards`, or `all` to wait for all shards, or an integer. Defaults to `0`.
+|`string` - Sets the number of active shards to wait for before the operation returns.
 
 |===
 
@@ -4035,7 +4025,6 @@ _Default:_ `open`
 ----
 client.indices.create({
   index: string,
-  include_type_name: boolean,
   wait_for_active_shards: string,
   timeout: string,
   master_timeout: string,
@@ -4047,9 +4036,6 @@ link:{ref}/indices-create-index.html[Documentation] +
 |===
 |`index`
 |`string` - The name of the index
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether a type should be expected in the body of the mappings.
 
 |`wait_for_active_shards` or `waitForActiveShards`
 |`string` - Set the number of active shards to wait for before the operation returns.
@@ -4132,8 +4118,8 @@ link:{ref}/indices-delete-index.html[Documentation] +
 |`boolean` - Ignore if a wildcard expression resolves to no concrete indices (default: false)
 
 |`expand_wildcards` or `expandWildcards`
-|`'open' \| 'closed' \| 'hidden' \| 'none' \| 'all'` - Whether wildcard expressions should get expanded to open or closed indices (default: open) +
-_Default:_ `open`
+|`'open' \| 'closed' \| 'hidden' \| 'none' \| 'all'` - Whether wildcard expressions should get expanded to open, closed, or hidden indices +
+_Default:_ `open,closed`
 
 |===
 
@@ -4525,36 +4511,6 @@ _Default:_ `open`
 |===
 
 [discrete]
-=== indices.flushSynced
-
-[source,ts]
-----
-client.indices.flushSynced({
-  index: string | string[],
-  ignore_unavailable: boolean,
-  allow_no_indices: boolean,
-  expand_wildcards: 'open' | 'closed' | 'none' | 'all'
-})
-----
-link:{ref}/indices-synced-flush-api.html[Documentation] +
-[cols=2*]
-|===
-|`index`
-|`string \| string[]` - A comma-separated list of index names; use `_all` or empty string for all indices
-
-|`ignore_unavailable` or `ignoreUnavailable`
-|`boolean` - Whether specified concrete indices should be ignored when unavailable (missing or closed)
-
-|`allow_no_indices` or `allowNoIndices`
-|`boolean` - Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
-
-|`expand_wildcards` or `expandWildcards`
-|`'open' \| 'closed' \| 'none' \| 'all'` - Whether to expand wildcard expression to concrete indices that are open, closed or both. +
-_Default:_ `open`
-
-|===
-
-[discrete]
 === indices.forcemerge
 
 [source,ts]
@@ -4645,7 +4601,6 @@ _Default:_ `closed`
 ----
 client.indices.get({
   index: string | string[],
-  include_type_name: boolean,
   local: boolean,
   ignore_unavailable: boolean,
   allow_no_indices: boolean,
@@ -4660,9 +4615,6 @@ link:{ref}/indices-get-index.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether to add the type name to the response (default: false)
 
 |`local`
 |`boolean` - Return local information, do not retrieve the state from master node (default: false)
@@ -4756,8 +4708,6 @@ _Default:_ `open`
 client.indices.getFieldMapping({
   fields: string | string[],
   index: string | string[],
-  type: string | string[],
-  include_type_name: boolean,
   include_defaults: boolean,
   ignore_unavailable: boolean,
   allow_no_indices: boolean,
@@ -4773,14 +4723,6 @@ link:{ref}/indices-get-field-mapping.html[Documentation] +
 
 |`index`
 |`string \| string[]` - A comma-separated list of index names
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types +
-
-WARNING: This parameter has been deprecated.
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether a type should be returned in the body of the mappings.
 
 |`include_defaults` or `includeDefaults`
 |`boolean` - Whether the default mapping values should be returned as well
@@ -4806,7 +4748,7 @@ _Default:_ `open`
 [source,ts]
 ----
 client.indices.getIndexTemplate({
-  name: string | string[],
+  name: string,
   flat_settings: boolean,
   master_timeout: string,
   local: boolean
@@ -4816,7 +4758,7 @@ link:{ref}/indices-templates.html[Documentation] +
 [cols=2*]
 |===
 |`name`
-|`string \| string[]` - The comma separated names of the index templates
+|`string` - A pattern that returned template names must match
 
 |`flat_settings` or `flatSettings`
 |`boolean` - Return settings in flat format (default: false)
@@ -4836,8 +4778,6 @@ link:{ref}/indices-templates.html[Documentation] +
 ----
 client.indices.getMapping({
   index: string | string[],
-  type: string | string[],
-  include_type_name: boolean,
   ignore_unavailable: boolean,
   allow_no_indices: boolean,
   expand_wildcards: 'open' | 'closed' | 'hidden' | 'none' | 'all',
@@ -4850,14 +4790,6 @@ link:{ref}/indices-get-mapping.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types +
-
-WARNING: This parameter has been deprecated.
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether to add the type name to the response (default: false)
 
 |`ignore_unavailable` or `ignoreUnavailable`
 |`boolean` - Whether specified concrete indices should be ignored when unavailable (missing or closed)
@@ -4936,7 +4868,6 @@ _Default:_ `all`
 ----
 client.indices.getTemplate({
   name: string | string[],
-  include_type_name: boolean,
   flat_settings: boolean,
   master_timeout: string,
   local: boolean
@@ -4948,9 +4879,6 @@ link:{ref}/indices-templates.html[Documentation] +
 |`name`
 |`string \| string[]` - The comma separated names of the index templates
 
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether a type should be returned in the body of the mappings.
-
 |`flat_settings` or `flatSettings`
 |`boolean` - Return settings in flat format (default: false)
 
@@ -4959,36 +4887,6 @@ link:{ref}/indices-templates.html[Documentation] +
 
 |`local`
 |`boolean` - Return local information, do not retrieve the state from master node (default: false)
-
-|===
-
-[discrete]
-=== indices.getUpgrade
-
-[source,ts]
-----
-client.indices.getUpgrade({
-  index: string | string[],
-  ignore_unavailable: boolean,
-  allow_no_indices: boolean,
-  expand_wildcards: 'open' | 'closed' | 'hidden' | 'none' | 'all'
-})
-----
-link:{ref}/indices-upgrade.html[Documentation] +
-[cols=2*]
-|===
-|`index`
-|`string \| string[]` - A comma-separated list of index names; use `_all` or empty string to perform the operation on all indices
-
-|`ignore_unavailable` or `ignoreUnavailable`
-|`boolean` - Whether specified concrete indices should be ignored when unavailable (missing or closed)
-
-|`allow_no_indices` or `allowNoIndices`
-|`boolean` - Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
-
-|`expand_wildcards` or `expandWildcards`
-|`'open' \| 'closed' \| 'hidden' \| 'none' \| 'all'` - Whether to expand wildcard expression to concrete indices that are open, closed or both. +
-_Default:_ `open`
 
 |===
 
@@ -5006,6 +4904,23 @@ link:{ref}/data-streams.html[Documentation] +
 |===
 |`name`
 |`string` - The name of the alias to migrate
+
+|===
+
+[discrete]
+=== indices.modifyDataStream
+
+[source,ts]
+----
+client.indices.modifyDataStream({
+  body: object
+})
+----
+link:{ref}/data-streams.html[Documentation] +
+[cols=2*]
+|===
+|`body`
+|`object` - The data stream modifications
 
 |===
 
@@ -5141,8 +5056,6 @@ link:{ref}/indices-templates.html[Documentation] +
 ----
 client.indices.putMapping({
   index: string | string[],
-  type: string,
-  include_type_name: boolean,
   timeout: string,
   master_timeout: string,
   ignore_unavailable: boolean,
@@ -5157,14 +5070,6 @@ link:{ref}/indices-put-mapping.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names the mapping should be added to (supports wildcards); use `_all` or omit to add the mapping on all indices.
-
-|`type`
-|`string` - The name of the document type +
-
-WARNING: This parameter has been deprecated.
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether a type should be expected in the body of the mappings.
 
 |`timeout`
 |`string` - Explicit operation timeout
@@ -5247,7 +5152,6 @@ _Default:_ `open`
 ----
 client.indices.putTemplate({
   name: string,
-  include_type_name: boolean,
   order: number,
   create: boolean,
   master_timeout: string,
@@ -5259,9 +5163,6 @@ link:{ref}/indices-templates.html[Documentation] +
 |===
 |`name`
 |`string` - The name of the template
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether a type should be returned in the body of the mappings.
 
 |`order`
 |`number` - The order for this template when merging multiple matching ones (higher numbers are merged later, overriding the lower numbers)
@@ -5364,7 +5265,7 @@ _Default:_ `open`
 
 [discrete]
 === indices.resolveIndex
-*Stability:* experimental
+
 [source,ts]
 ----
 client.indices.resolveIndex({
@@ -5392,7 +5293,6 @@ _Default:_ `open`
 client.indices.rollover({
   alias: string,
   new_index: string,
-  include_type_name: boolean,
   timeout: string,
   dry_run: boolean,
   master_timeout: string,
@@ -5408,9 +5308,6 @@ link:{ref}/indices-rollover-index.html[Documentation] +
 
 |`new_index` or `newIndex`
 |`string` - The name of the rollover index
-
-|`include_type_name` or `includeTypeName`
-|`boolean` - Whether a type should be included in the body of the mappings.
 
 |`timeout`
 |`string` - Explicit operation timeout
@@ -5459,7 +5356,9 @@ link:{ref}/indices-segments.html[Documentation] +
 _Default:_ `open`
 
 |`verbose`
-|`boolean` - Includes detailed memory usage by Lucene.
+|`boolean` - Includes detailed memory usage by Lucene. +
+
+WARNING: This parameter has been deprecated.
 
 |===
 
@@ -5505,7 +5404,6 @@ _Default:_ `open`
 client.indices.shrink({
   index: string,
   target: string,
-  copy_settings: boolean,
   timeout: string,
   master_timeout: string,
   wait_for_active_shards: string,
@@ -5520,9 +5418,6 @@ link:{ref}/indices-shrink-index.html[Documentation] +
 
 |`target`
 |`string` - The name of the target index to shrink into
-
-|`copy_settings` or `copySettings`
-|`boolean` - whether or not to copy settings from the source index (defaults to false)
 
 |`timeout`
 |`string` - Explicit operation timeout
@@ -5612,7 +5507,6 @@ link:{ref}/indices-templates.html[Documentation] +
 client.indices.split({
   index: string,
   target: string,
-  copy_settings: boolean,
   timeout: string,
   master_timeout: string,
   wait_for_active_shards: string,
@@ -5627,9 +5521,6 @@ link:{ref}/indices-split-index.html[Documentation] +
 
 |`target`
 |`string` - The name of the target index to split into
-
-|`copy_settings` or `copySettings`
-|`boolean` - whether or not to copy settings from the source index (defaults to false)
 
 |`timeout`
 |`string` - Explicit operation timeout
@@ -5675,10 +5566,10 @@ link:{ref}/indices-stats.html[Documentation] +
 |`string \| string[]` - A comma-separated list of index names; use `_all` or empty string to perform the operation on all indices
 
 |`completion_fields` or `completionFields`
-|`string \| string[]` - A comma-separated list of fields for `fielddata` and `suggest` index metric (supports wildcards)
+|`string \| string[]` - A comma-separated list of fields for the `completion` index metric (supports wildcards)
 
 |`fielddata_fields` or `fielddataFields`
-|`string \| string[]` - A comma-separated list of fields for `fielddata` index metric (supports wildcards)
+|`string \| string[]` - A comma-separated list of fields for the `fielddata` index metric (supports wildcards)
 
 |`fields`
 |`string \| string[]` - A comma-separated list of fields for `fielddata` and `completion` index metric (supports wildcards)
@@ -5773,44 +5664,6 @@ link:{ref}/indices-aliases.html[Documentation] +
 
 |`body`
 |`object` - The definition of `actions` to perform
-
-|===
-
-[discrete]
-=== indices.upgrade
-
-[source,ts]
-----
-client.indices.upgrade({
-  index: string | string[],
-  allow_no_indices: boolean,
-  expand_wildcards: 'open' | 'closed' | 'hidden' | 'none' | 'all',
-  ignore_unavailable: boolean,
-  wait_for_completion: boolean,
-  only_ancient_segments: boolean
-})
-----
-link:{ref}/indices-upgrade.html[Documentation] +
-[cols=2*]
-|===
-|`index`
-|`string \| string[]` - A comma-separated list of index names; use `_all` or empty string to perform the operation on all indices
-
-|`allow_no_indices` or `allowNoIndices`
-|`boolean` - Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
-
-|`expand_wildcards` or `expandWildcards`
-|`'open' \| 'closed' \| 'hidden' \| 'none' \| 'all'` - Whether to expand wildcard expression to concrete indices that are open, closed or both. +
-_Default:_ `open`
-
-|`ignore_unavailable` or `ignoreUnavailable`
-|`boolean` - Whether specified concrete indices should be ignored when unavailable (missing or closed)
-
-|`wait_for_completion` or `waitForCompletion`
-|`boolean` - Specify whether the request should block until the all segments are upgraded (default: false)
-
-|`only_ancient_segments` or `onlyAncientSegments`
-|`boolean` - If true, only ancient (an older Lucene major release) segments will be upgraded
 
 |===
 
@@ -5978,6 +5831,7 @@ link:{ref}/grok-processor.html#grok-processor-rest-get[Documentation] +
 ----
 client.ingest.putPipeline({
   id: string,
+  if_version: number,
   master_timeout: string,
   timeout: string,
   body: object
@@ -5988,6 +5842,9 @@ link:{ref}/put-pipeline-api.html[Documentation] +
 |===
 |`id`
 |`string` - Pipeline ID
+
+|`if_version` or `ifVersion`
+|`number` - Required version for optimistic concurrency control for pipeline updates
 
 |`master_timeout` or `masterTimeout`
 |`string` - Explicit operation timeout for connection to master node
@@ -6026,6 +5883,31 @@ link:{ref}/simulate-pipeline-api.html[Documentation] +
 |===
 
 [discrete]
+=== knnSearch
+*Stability:* experimental
+[source,ts]
+----
+client.knnSearch({
+  index: string | string[],
+  routing: string | string[],
+  body: object
+})
+----
+link:{ref}/search-search.html[Documentation] +
+[cols=2*]
+|===
+|`index`
+|`string \| string[]` - A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
+
+|`routing`
+|`string \| string[]` - A comma-separated list of specific routing values
+
+|`body`
+|`object` - The search definition
+
+|===
+
+[discrete]
 === license.delete
 
 [source,ts]
@@ -6052,7 +5934,9 @@ link:{ref}/get-license.html[Documentation] +
 |`boolean` - Return local information, do not retrieve the state from master node (default: false)
 
 |`accept_enterprise` or `acceptEnterprise`
-|`boolean` - If the active license is an enterprise license, return type as 'enterprise' (default: false)
+|`boolean` - Supported for backwards compatibility with 7.x. If this param is used it must be set to true +
+
+WARNING: This parameter has been deprecated.
 
 |===
 
@@ -6197,7 +6081,6 @@ link:{ref}/logstash-api-put-pipeline.html[Documentation] +
 ----
 client.mget({
   index: string,
-  type: string,
   stored_fields: string | string[],
   preference: string,
   realtime: boolean,
@@ -6214,11 +6097,6 @@ link:{ref}/docs-multi-get.html[Documentation] +
 |===
 |`index`
 |`string` - The name of the index
-
-|`type`
-|`string` - The type of the document +
-
-WARNING: This parameter has been deprecated.
 
 |`stored_fields` or `storedFields`
 |`string \| string[]` - A comma-separated list of stored fields to return in the response
@@ -6245,7 +6123,7 @@ WARNING: This parameter has been deprecated.
 |`string \| string[]` - A list of fields to extract and return from the _source field
 
 |`body`
-|`object` - Document identifiers; can be either `docs` (containing full document information) or `ids` (when index and type is provided in the URL.
+|`object` - Document identifiers; can be either `docs` (containing full document information) or `ids` (when index is provided in the URL.
 
 |===
 
@@ -6265,6 +6143,26 @@ link:{ref}/migration-api-deprecation.html[Documentation] +
 |`string` - Index pattern
 
 |===
+
+[discrete]
+=== migration.getFeatureUpgradeStatus
+
+[source,ts]
+----
+client.migration.getFeatureUpgradeStatus()
+----
+link:{ref}/migration-api-feature-upgrade.html[Documentation] +
+
+
+[discrete]
+=== migration.postFeatureUpgrade
+
+[source,ts]
+----
+client.migration.postFeatureUpgrade()
+----
+link:{ref}/migration-api-feature-upgrade.html[Documentation] +
+
 
 [discrete]
 === ml.closeJob
@@ -6622,82 +6520,6 @@ link:{ref}/explain-dfanalytics.html[Documentation] +
 
 |`body`
 |`object` - The data frame analytics config to explain
-
-|===
-
-[discrete]
-=== ml.findFileStructure
-*Stability:* experimental
-[source,ts]
-----
-client.ml.findFileStructure({
-  lines_to_sample: number,
-  line_merge_size_limit: number,
-  timeout: string,
-  charset: string,
-  format: 'ndjson' | 'xml' | 'delimited' | 'semi_structured_text',
-  has_header_row: boolean,
-  column_names: string | string[],
-  delimiter: string,
-  quote: string,
-  should_trim_fields: boolean,
-  grok_pattern: string,
-  timestamp_field: string,
-  timestamp_format: string,
-  explain: boolean,
-  body: object
-})
-----
-link:{ref}/find-structure.html[Documentation] +
-[cols=2*]
-|===
-|`lines_to_sample` or `linesToSample`
-|`number` - How many lines of the file should be included in the analysis +
-_Default:_ `1000`
-
-|`line_merge_size_limit` or `lineMergeSizeLimit`
-|`number` - Maximum number of characters permitted in a single message when lines are merged to create messages. +
-_Default:_ `10000`
-
-|`timeout`
-|`string` - Timeout after which the analysis will be aborted +
-_Default:_ `25s`
-
-|`charset`
-|`string` - Optional parameter to specify the character set of the file
-
-|`format`
-|`'ndjson' \| 'xml' \| 'delimited' \| 'semi_structured_text'` - Optional parameter to specify the high level file format
-
-|`has_header_row` or `hasHeaderRow`
-|`boolean` - Optional parameter to specify whether a delimited file includes the column names in its first row
-
-|`column_names` or `columnNames`
-|`string \| string[]` - Optional parameter containing a comma separated list of the column names for a delimited file
-
-|`delimiter`
-|`string` - Optional parameter to specify the delimiter character for a delimited file - must be a single character
-
-|`quote`
-|`string` - Optional parameter to specify the quote character for a delimited file - must be a single character
-
-|`should_trim_fields` or `shouldTrimFields`
-|`boolean` - Optional parameter to specify whether the values between delimiters in a delimited file should have whitespace trimmed from them
-
-|`grok_pattern` or `grokPattern`
-|`string` - Optional parameter to specify the Grok pattern that should be used to extract fields from messages in a semi-structured text file
-
-|`timestamp_field` or `timestampField`
-|`string` - Optional parameter to specify the timestamp field in the file
-
-|`timestamp_format` or `timestampFormat`
-|`string` - Optional parameter to specify the timestamp format in the file - may be either a Joda or Java time format
-
-|`explain`
-|`boolean` - Whether to include a commentary on how the structure was derived
-
-|`body`
-|`object` - The contents of the file to be analyzed
 
 |===
 
@@ -7357,6 +7179,23 @@ link:{ref}/ml-get-record.html[Documentation] +
 |===
 
 [discrete]
+=== ml.getTrainedModelDeploymentStats
+
+[source,ts]
+----
+client.ml.getTrainedModelDeploymentStats({
+  model_id: string
+})
+----
+link:{ref}/ml-get-trained-model-deployment-stats.html[Documentation] +
+[cols=2*]
+|===
+|`model_id` or `modelId`
+|`string` - The ID of the trained model deployment stats to fetch
+
+|===
+
+[discrete]
 === ml.getTrainedModels
 
 [source,ts]
@@ -7438,6 +7277,32 @@ _Default:_ `true`
 |`size`
 |`number` - specifies a max number of trained models to get +
 _Default:_ `100`
+
+|===
+
+[discrete]
+=== ml.inferTrainedModelDeployment
+*Stability:* experimental
+[source,ts]
+----
+client.ml.inferTrainedModelDeployment({
+  model_id: string,
+  timeout: string,
+  body: object
+})
+----
+link:{ref}/infer-trained-model-deployment.html[Documentation] +
+[cols=2*]
+|===
+|`model_id` or `modelId`
+|`string` - The unique identifier of the trained model.
+
+|`timeout`
+|`string` - Controls the amount of time to wait for inference results. +
+_Default:_ `10s`
+
+|`body`
+|`object` - The docs to apply inference on
 
 |===
 
@@ -7725,6 +7590,7 @@ link:{ref}/ml-put-job.html[Documentation] +
 ----
 client.ml.putTrainedModel({
   model_id: string,
+  defer_definition_decompression: boolean,
   body: object
 })
 ----
@@ -7733,6 +7599,9 @@ link:{ref}/put-trained-models.html[Documentation] +
 |===
 |`model_id` or `modelId`
 |`string` - The ID of the trained models to store
+
+|`defer_definition_decompression` or `deferDefinitionDecompression`
+|`boolean` - If set to `true` and a `compressed_definition` is provided, the request defers definition decompression and skips relevant validations.
 
 |`body`
 |`object` - The trained model configuration
@@ -7761,6 +7630,52 @@ link:{ref}/put-trained-models-aliases.html[Documentation] +
 
 |`reassign`
 |`boolean` - If the model_alias already exists and points to a separate model_id, this parameter must be true. Defaults to false.
+
+|===
+
+[discrete]
+=== ml.putTrainedModelDefinitionPart
+*Stability:* experimental
+[source,ts]
+----
+client.ml.putTrainedModelDefinitionPart({
+  model_id: string,
+  part: number,
+  body: object
+})
+----
+link:{ref}/put-trained-model-definition-part.html[Documentation] +
+[cols=2*]
+|===
+|`model_id` or `modelId`
+|`string` - The ID of the trained model for this definition part
+
+|`part`
+|`number` - The part number
+
+|`body`
+|`object` - The trained model definition part
+
+|===
+
+[discrete]
+=== ml.putTrainedModelVocabulary
+*Stability:* experimental
+[source,ts]
+----
+client.ml.putTrainedModelVocabulary({
+  model_id: string,
+  body: object
+})
+----
+link:{ref}/put-trained-model-vocabulary.html[Documentation] +
+[cols=2*]
+|===
+|`model_id` or `modelId`
+|`string` - The ID of the trained model for this vocabulary
+
+|`body`
+|`object` - The trained model vocabulary
 
 |===
 
@@ -7895,6 +7810,33 @@ link:{ref}/ml-start-datafeed.html[Documentation] +
 |===
 
 [discrete]
+=== ml.startTrainedModelDeployment
+*Stability:* experimental
+[source,ts]
+----
+client.ml.startTrainedModelDeployment({
+  model_id: string,
+  timeout: string,
+  wait_for: string
+})
+----
+link:{ref}/start-trained-model-deployment.html[Documentation] +
+[cols=2*]
+|===
+|`model_id` or `modelId`
+|`string` - The unique identifier of the trained model.
+
+|`timeout`
+|`string` - Controls the amount of time to wait for the model to deploy. +
+_Default:_ `20s`
+
+|`wait_for` or `waitFor`
+|`string` - The allocation status for which to wait +
+_Default:_ `started`
+
+|===
+
+[discrete]
 === ml.stopDataFrameAnalytics
 
 [source,ts]
@@ -7963,6 +7905,23 @@ WARNING: This parameter has been deprecated.
 
 |`body`
 |`object` - The URL params optionally sent in the body
+
+|===
+
+[discrete]
+=== ml.stopTrainedModelDeployment
+*Stability:* experimental
+[source,ts]
+----
+client.ml.stopTrainedModelDeployment({
+  model_id: string
+})
+----
+link:{ref}/stop-trained-model-deployment.html[Documentation] +
+[cols=2*]
+|===
+|`model_id` or `modelId`
+|`string` - The unique identifier of the trained model.
 
 |===
 
@@ -8156,7 +8115,7 @@ link:https://www.elastic.co/guide/en/machine-learning/current/ml-jobs.html[Docum
 
 [discrete]
 === monitoring.bulk
-*Stability:* experimental
+
 [source,ts]
 ----
 client.monitoring.bulk({
@@ -8196,7 +8155,6 @@ WARNING: This parameter has been deprecated.
 ----
 client.msearch({
   index: string | string[],
-  type: string | string[],
   search_type: 'query_then_fetch' | 'dfs_query_then_fetch',
   max_concurrent_searches: number,
   typed_keys: boolean,
@@ -8213,9 +8171,6 @@ link:{ref}/search-multi-search.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to use as default
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to use as default
 
 |`search_type` or `searchType`
 |`'query_then_fetch' \| 'dfs_query_then_fetch'` - Search operation type
@@ -8252,7 +8207,6 @@ _Default:_ `true`
 ----
 client.msearchTemplate({
   index: string | string[],
-  type: string | string[],
   search_type: 'query_then_fetch' | 'dfs_query_then_fetch',
   typed_keys: boolean,
   max_concurrent_searches: number,
@@ -8266,9 +8220,6 @@ link:{ref}/search-multi-search.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to use as default
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to use as default
 
 |`search_type` or `searchType`
 |`'query_then_fetch' \| 'dfs_query_then_fetch'` - Search operation type
@@ -8298,7 +8249,6 @@ _Default:_ `true`
 ----
 client.mtermvectors({
   index: string,
-  type: string,
   ids: string | string[],
   term_statistics: boolean,
   field_statistics: boolean,
@@ -8310,7 +8260,7 @@ client.mtermvectors({
   routing: string,
   realtime: boolean,
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force',
+  version_type: 'internal' | 'external' | 'external_gte',
   body: object
 })
 ----
@@ -8319,9 +8269,6 @@ link:{ref}/docs-multi-termvectors.html[Documentation] +
 |===
 |`index`
 |`string` - The index in which the document resides.
-
-|`type`
-|`string` - The type of the document.
 
 |`ids`
 |`string \| string[]` - A comma-separated list of documents ids. You must define ids as parameter or set "ids" or "docs" in the request body
@@ -8361,7 +8308,7 @@ _Default:_ `true`
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |`body`
 |`object` - Define ids, documents, parameters or a list of parameters per document here. You must at least provide a list of document ids. See documentation.
@@ -8369,11 +8316,11 @@ _Default:_ `true`
 |===
 
 [discrete]
-=== nodes.clearMeteringArchive
+=== nodes.clearRepositoriesMeteringArchive
 *Stability:* experimental
 [source,ts]
 ----
-client.nodes.clearMeteringArchive({
+client.nodes.clearRepositoriesMeteringArchive({
   node_id: string | string[],
   max_archive_version: number
 })
@@ -8390,11 +8337,11 @@ link:{ref}/clear-repositories-metering-archive-api.html[Documentation] +
 |===
 
 [discrete]
-=== nodes.getMeteringInfo
+=== nodes.getRepositoriesMeteringInfo
 *Stability:* experimental
 [source,ts]
 ----
-client.nodes.getMeteringInfo({
+client.nodes.getRepositoriesMeteringInfo({
   node_id: string | string[]
 })
 ----
@@ -8466,7 +8413,7 @@ link:{ref}/cluster-nodes-info.html[Documentation] +
 |`string \| string[]` - A comma-separated list of node IDs or names to limit the returned information; use `_local` to return information from the node you're connecting to, leave empty to get information from all nodes
 
 |`metric`
-|`string \| string[]` - A comma-separated list of metrics you wish returned. Leave empty to return all.
+|`string \| string[]` - A comma-separated list of metrics you wish returned. Leave empty to return all metrics.
 
 |`flat_settings` or `flatSettings`
 |`boolean` - Return settings in flat format (default: false)
@@ -8534,10 +8481,10 @@ link:{ref}/cluster-nodes-stats.html[Documentation] +
 |`string \| string[]` - Limit the information returned for `indices` metric to the specific index metrics. Isn't used if `indices` (or `all`) metric isn't specified.
 
 |`completion_fields` or `completionFields`
-|`string \| string[]` - A comma-separated list of fields for `fielddata` and `suggest` index metric (supports wildcards)
+|`string \| string[]` - A comma-separated list of fields for the `completion` index metric (supports wildcards)
 
 |`fielddata_fields` or `fielddataFields`
-|`string \| string[]` - A comma-separated list of fields for `fielddata` index metric (supports wildcards)
+|`string \| string[]` - A comma-separated list of fields for the `fielddata` index metric (supports wildcards)
 
 |`fields`
 |`string \| string[]` - A comma-separated list of fields for `fielddata` and `completion` index metric (supports wildcards)
@@ -8671,7 +8618,7 @@ link:{ref}/modules-scripting.html[Documentation] +
 
 [discrete]
 === rankEval
-*Stability:* experimental
+
 [source,ts]
 ----
 client.rankEval({
@@ -9050,7 +8997,6 @@ WARNING: This parameter has been deprecated.
 ----
 client.search({
   index: string | string[],
-  type: string | string[],
   analyzer: string,
   analyze_wildcard: boolean,
   ccs_minimize_roundtrips: boolean,
@@ -9083,7 +9029,7 @@ client.search({
   suggest_text: string,
   timeout: string,
   track_scores: boolean,
-  track_total_hits: boolean,
+  track_total_hits: boolean|long,
   allow_partial_search_results: boolean,
   typed_keys: boolean,
   version: boolean,
@@ -9103,9 +9049,6 @@ link:{ref}/search-search.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to search; leave empty to perform the operation on all types
 
 |`analyzer`
 |`string` - The analyzer to use for the query string
@@ -9208,7 +9151,7 @@ _Default:_ `missing`
 |`boolean` - Whether to calculate and return scores even if they are not used for sorting
 
 |`track_total_hits` or `trackTotalHits`
-|`boolean` - Indicate if the number of documents that match the query should be tracked
+|`boolean\|long` - Indicate if the number of documents that match the query should be tracked. A number can also be specified, to accurately track the total hit count up to the number.
 
 |`allow_partial_search_results` or `allowPartialSearchResults`
 |`boolean` - Indicate if an error should be returned if there is a partial search failure or timeout +
@@ -9262,8 +9205,9 @@ client.searchMvt({
   exact_bounds: boolean,
   extent: number,
   grid_precision: number,
-  grid_type: 'grid' | 'point',
+  grid_type: 'grid' | 'point' | 'centroid',
   size: number,
+  track_total_hits: boolean|long,
   body: object
 })
 ----
@@ -9297,12 +9241,15 @@ _Default:_ `4096`
 _Default:_ `8`
 
 |`grid_type` or `gridType`
-|`'grid' \| 'point'` - Determines the geometry type for features in the aggs layer. +
+|`'grid' \| 'point' \| 'centroid'` - Determines the geometry type for features in the aggs layer. +
 _Default:_ `grid`
 
 |`size`
 |`number` - Maximum number of features to return in the hits layer. Accepts 0-10000. +
 _Default:_ `10000`
+
+|`track_total_hits` or `trackTotalHits`
+|`boolean\|long` - Indicate if the number of documents that match the query should be tracked. A number can also be specified, to accurately track the total hit count up to the number.
 
 |`body`
 |`object` - Search request body.
@@ -9358,7 +9305,6 @@ _Default:_ `open`
 ----
 client.searchTemplate({
   index: string | string[],
-  type: string | string[],
   ignore_unavailable: boolean,
   ignore_throttled: boolean,
   allow_no_indices: boolean,
@@ -9380,9 +9326,6 @@ link:{ref}/search-template.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to search; leave empty to perform the operation on all types
 
 |`ignore_unavailable` or `ignoreUnavailable`
 |`boolean` - Whether specified concrete indices should be ignored when unavailable (missing or closed)
@@ -9479,7 +9422,7 @@ _Default:_ `open`
 
 [discrete]
 === searchableSnapshots.mount
-*Stability:* experimental
+
 [source,ts]
 ----
 client.searchableSnapshots.mount({
@@ -9515,25 +9458,8 @@ link:{ref}/searchable-snapshots-api-mount-snapshot.html[Documentation] +
 |===
 
 [discrete]
-=== searchableSnapshots.repositoryStats
-*Stability:* experimental
-[source,ts]
-----
-client.searchableSnapshots.repositoryStats({
-  repository: string
-})
-----
-link:{ref}/searchable-snapshots-apis.html[Documentation] +
-[cols=2*]
-|===
-|`repository`
-|`string` - The repository for which to get the stats for
-
-|===
-
-[discrete]
 === searchableSnapshots.stats
-*Stability:* experimental
+
 [source,ts]
 ----
 client.searchableSnapshots.stats({
@@ -9662,7 +9588,7 @@ link:{ref}/security-api-clear-role-cache.html[Documentation] +
 
 [discrete]
 === security.clearCachedServiceTokens
-*Stability:* beta
+
 [source,ts]
 ----
 client.security.clearCachedServiceTokens({
@@ -9708,7 +9634,7 @@ link:{ref}/security-api-create-api-key.html[Documentation] +
 
 [discrete]
 === security.createServiceToken
-*Stability:* beta
+
 [source,ts]
 ----
 client.security.createServiceToken({
@@ -9804,7 +9730,7 @@ link:{ref}/security-api-delete-role-mapping.html[Documentation] +
 
 [discrete]
 === security.deleteServiceToken
-*Stability:* beta
+
 [source,ts]
 ----
 client.security.deleteServiceToken({
@@ -9893,6 +9819,26 @@ link:{ref}/security-api-enable-user.html[Documentation] +
 |`'true' \| 'false' \| 'wait_for'` - If `true` (the default) then refresh the affected shards to make this operation visible to search, if `wait_for` then wait for a refresh to make this operation visible to search, if `false` then do nothing with refreshes.
 
 |===
+
+[discrete]
+=== security.enrollKibana
+
+[source,ts]
+----
+client.security.enrollKibana()
+----
+link:{ref}/security-api-kibana-enrollment.html[Documentation] +
+
+
+[discrete]
+=== security.enrollNode
+
+[source,ts]
+----
+client.security.enrollNode()
+----
+link:{ref}/security-api-node-enrollment.html[Documentation] +
+
 
 [discrete]
 === security.getApiKey
@@ -9994,7 +9940,7 @@ link:{ref}/security-api-get-role-mapping.html[Documentation] +
 
 [discrete]
 === security.getServiceAccounts
-*Stability:* beta
+
 [source,ts]
 ----
 client.security.getServiceAccounts({
@@ -10015,7 +9961,7 @@ link:{ref}/security-api-get-service-accounts.html[Documentation] +
 
 [discrete]
 === security.getServiceCredentials
-*Stability:* beta
+
 [source,ts]
 ----
 client.security.getServiceCredentials({
@@ -10371,7 +10317,7 @@ link:{ref}/security-api-saml-sp-metadata.html[Documentation] +
 
 [discrete]
 === shutdown.deleteNode
-*Stability:* experimental
+
 [source,ts]
 ----
 client.shutdown.deleteNode({
@@ -10388,7 +10334,7 @@ link:https://www.elastic.co/guide/en/elasticsearch/reference/current[Documentati
 
 [discrete]
 === shutdown.getNode
-*Stability:* experimental
+
 [source,ts]
 ----
 client.shutdown.getNode({
@@ -10405,7 +10351,7 @@ link:https://www.elastic.co/guide/en/elasticsearch/reference/current[Documentati
 
 [discrete]
 === shutdown.putNode
-*Stability:* experimental
+
 [source,ts]
 ----
 client.shutdown.putNode({
@@ -10677,7 +10623,7 @@ link:{ref}/modules-snapshots.html[Documentation] +
 ----
 client.snapshot.delete({
   repository: string,
-  snapshot: string,
+  snapshot: string | string[],
   master_timeout: string
 })
 ----
@@ -10688,7 +10634,7 @@ link:{ref}/modules-snapshots.html[Documentation] +
 |`string` - A repository name
 
 |`snapshot`
-|`string` - A snapshot name
+|`string \| string[]` - A comma-separated list of snapshot names
 
 |`master_timeout` or `masterTimeout`
 |`string` - Explicit operation timeout for connection to master node
@@ -11171,7 +11117,7 @@ _Default:_ `nodes`
 
 [discrete]
 === termsEnum
-*Stability:* beta
+
 [source,ts]
 ----
 client.termsEnum({
@@ -11198,7 +11144,6 @@ link:{ref}/search-terms-enum.html[Documentation] +
 client.termvectors({
   index: string,
   id: string,
-  type: string,
   term_statistics: boolean,
   field_statistics: boolean,
   fields: string | string[],
@@ -11209,7 +11154,7 @@ client.termvectors({
   routing: string,
   realtime: boolean,
   version: number,
-  version_type: 'internal' | 'external' | 'external_gte' | 'force',
+  version_type: 'internal' | 'external' | 'external_gte',
   body: object
 })
 ----
@@ -11221,9 +11166,6 @@ link:{ref}/docs-termvectors.html[Documentation] +
 
 |`id`
 |`string` - The id of the document, when not specified a doc param should be supplied.
-
-|`type`
-|`string` - The type of the document.
 
 |`term_statistics` or `termStatistics`
 |`boolean` - Specifies if total term frequency and document frequency should be returned.
@@ -11260,7 +11202,7 @@ _Default:_ `true`
 |`number` - Explicit version number for concurrency control
 
 |`version_type` or `versionType`
-|`'internal' \| 'external' \| 'external_gte' \| 'force'` - Specific version type
+|`'internal' \| 'external' \| 'external_gte'` - Specific version type
 
 |`body`
 |`object` - Define parameters and or supply a document to get termvectors for. See documentation.
@@ -11432,12 +11374,16 @@ link:{ref}/get-transform-stats.html[Documentation] +
 [source,ts]
 ----
 client.transform.previewTransform({
+  transform_id: string,
   body: object
 })
 ----
 link:{ref}/preview-transform.html[Documentation] +
 [cols=2*]
 |===
+|`transform_id` or `transformId`
+|`string` - The id of the transform to preview.
+
 |`body`
 |`object` - The definition for the transform to preview
 
@@ -11552,6 +11498,23 @@ link:{ref}/update-transform.html[Documentation] +
 |===
 
 [discrete]
+=== transform.upgradeTransforms
+
+[source,ts]
+----
+client.transform.upgradeTransforms({
+  dry_run: boolean
+})
+----
+link:{ref}/upgrade-transforms.html[Documentation] +
+[cols=2*]
+|===
+|`dry_run` or `dryRun`
+|`boolean` - Whether to only check for updates but don't execute
+
+|===
+
+[discrete]
 === update
 
 [source,ts]
@@ -11638,7 +11601,6 @@ WARNING: This parameter has been deprecated.
 ----
 client.updateByQuery({
   index: string | string[],
-  type: string | string[],
   analyzer: string,
   analyze_wildcard: boolean,
   default_operator: 'AND' | 'OR',
@@ -11656,7 +11618,6 @@ client.updateByQuery({
   scroll: string,
   search_type: 'query_then_fetch' | 'dfs_query_then_fetch',
   search_timeout: string,
-  size: number,
   max_docs: number,
   sort: string | string[],
   _source: string | string[],
@@ -11683,9 +11644,6 @@ link:{ref}/docs-update-by-query.html[Documentation] +
 |===
 |`index`
 |`string \| string[]` - A comma-separated list of index names to search; use `_all` or empty string to perform the operation on all indices
-
-|`type`
-|`string \| string[]` - A comma-separated list of document types to search; leave empty to perform the operation on all types
 
 |`analyzer`
 |`string` - The analyzer to use for the query string
@@ -11740,9 +11698,6 @@ _Default:_ `open`
 
 |`search_timeout` or `searchTimeout`
 |`string` - Explicit timeout for each search request. Defaults to no timeout.
-
-|`size`
-|`number` - Deprecated, please use `max_docs` instead
 
 |`max_docs` or `maxDocs`
 |`number` - Maximum number of documents to process (default: all documents)
@@ -12051,7 +12006,9 @@ link:{ref}/info-api.html[Documentation] +
 |`string \| string[]` - Comma-separated list of info categories. Can be any of: build, license, features
 
 |`accept_enterprise` or `acceptEnterprise`
-|`boolean` - If an enterprise license is installed, return the type and mode as 'enterprise' (default: false)
+|`boolean` - If this param is used it must be set to true +
+
+WARNING: This parameter has been deprecated.
 
 |===
 

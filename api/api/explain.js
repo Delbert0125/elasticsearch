@@ -39,17 +39,12 @@ function explainApi (params, options, callback) {
     return handleError(err, callback)
   }
 
-  let { method, body, id, index, type, ...querystring } = params
+  let { method, body, id, index, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null && (id) != null) {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + encodeURIComponent(id) + '/' + '_explain'
-  } else {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + encodeURIComponent(index) + '/' + '_explain' + '/' + encodeURIComponent(id)
-  }
+  if (method == null) method = body == null ? 'GET' : 'POST'
+  path = '/' + encodeURIComponent(index) + '/' + '_explain' + '/' + encodeURIComponent(id)
 
   // build request object
   const request = {

@@ -124,33 +124,6 @@ SearchableSnapshotsApi.prototype.mount = function searchableSnapshotsMountApi (p
   return this.transport.request(request, options, callback)
 }
 
-SearchableSnapshotsApi.prototype.repositoryStats = function searchableSnapshotsRepositoryStatsApi (params, options, callback) {
-  ;[params, options, callback] = normalizeArguments(params, options, callback)
-
-  // check required parameters
-  if (params.repository == null) {
-    const err = new this[kConfigurationError]('Missing required parameter: repository')
-    return handleError(err, callback)
-  }
-
-  let { method, body, repository, ...querystring } = params
-  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
-
-  let path = ''
-  if (method == null) method = 'GET'
-  path = '/' + '_snapshot' + '/' + encodeURIComponent(repository) + '/' + '_stats'
-
-  // build request object
-  const request = {
-    method,
-    path,
-    body: null,
-    querystring
-  }
-
-  return this.transport.request(request, options, callback)
-}
-
 SearchableSnapshotsApi.prototype.stats = function searchableSnapshotsStatsApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
@@ -179,8 +152,7 @@ SearchableSnapshotsApi.prototype.stats = function searchableSnapshotsStatsApi (p
 
 Object.defineProperties(SearchableSnapshotsApi.prototype, {
   cache_stats: { get () { return this.cacheStats } },
-  clear_cache: { get () { return this.clearCache } },
-  repository_stats: { get () { return this.repositoryStats } }
+  clear_cache: { get () { return this.clearCache } }
 })
 
 module.exports = SearchableSnapshotsApi

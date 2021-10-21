@@ -53,6 +53,7 @@ const indexApi = require('./api/index')
 const IndicesApi = require('./api/indices')
 const infoApi = require('./api/info')
 const IngestApi = require('./api/ingest')
+const knnSearchApi = require('./api/knn_search')
 const LicenseApi = require('./api/license')
 const LogstashApi = require('./api/logstash')
 const mgetApi = require('./api/mget')
@@ -187,6 +188,7 @@ ESAPI.prototype.getScriptLanguages = getScriptLanguagesApi
 ESAPI.prototype.getSource = getSourceApi
 ESAPI.prototype.index = indexApi
 ESAPI.prototype.info = infoApi
+ESAPI.prototype.knnSearch = knnSearchApi
 ESAPI.prototype.mget = mgetApi
 ESAPI.prototype.msearch = msearchApi
 ESAPI.prototype.msearchTemplate = msearchTemplateApi
@@ -336,6 +338,7 @@ Object.defineProperties(ESAPI.prototype, {
       return this[kIngest]
     }
   },
+  knn_search: { get () { return this.knnSearch } },
   license: {
     get () {
       if (this[kLicense] === null) {

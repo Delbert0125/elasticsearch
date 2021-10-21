@@ -23,15 +23,15 @@
 /* eslint no-unused-vars: 0 */
 
 const { handleError, snakeCaseKeys, normalizeArguments, kConfigurationError } = require('../utils')
-const acceptedQuerystring = ['search_type', 'max_concurrent_searches', 'typed_keys', 'pre_filter_shard_size', 'max_concurrent_shard_requests', 'rest_total_hits_as_int', 'ccs_minimize_roundtrips', 'pretty', 'human', 'error_trace', 'source', 'filter_path']
-const snakeCase = { searchType: 'search_type', maxConcurrentSearches: 'max_concurrent_searches', typedKeys: 'typed_keys', preFilterShardSize: 'pre_filter_shard_size', maxConcurrentShardRequests: 'max_concurrent_shard_requests', restTotalHitsAsInt: 'rest_total_hits_as_int', ccsMinimizeRoundtrips: 'ccs_minimize_roundtrips', errorTrace: 'error_trace', filterPath: 'filter_path' }
+const acceptedQuerystring = ['routing', 'pretty', 'human', 'error_trace', 'source', 'filter_path']
+const snakeCase = { errorTrace: 'error_trace', filterPath: 'filter_path' }
 
-function msearchApi (params, options, callback) {
+function knnSearchApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
   // check required parameters
-  if (params.body == null) {
-    const err = new this[kConfigurationError]('Missing required parameter: body')
+  if (params.index == null) {
+    const err = new this[kConfigurationError]('Missing required parameter: index')
     return handleError(err, callback)
   }
 
@@ -39,23 +39,18 @@ function msearchApi (params, options, callback) {
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null) {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + encodeURIComponent(index) + '/' + '_msearch'
-  } else {
-    if (method == null) method = body == null ? 'GET' : 'POST'
-    path = '/' + '_msearch'
-  }
+  if (method == null) method = body == null ? 'GET' : 'POST'
+  path = '/' + encodeURIComponent(index) + '/' + '_knn_search'
 
   // build request object
   const request = {
     method,
     path,
-    bulkBody: body,
+    body: body || '',
     querystring
   }
 
   return this.transport.request(request, options, callback)
 }
 
-module.exports = msearchApi
+module.exports = knnSearchApi

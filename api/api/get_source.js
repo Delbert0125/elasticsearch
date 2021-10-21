@@ -39,17 +39,12 @@ function getSourceApi (params, options, callback) {
     return handleError(err, callback)
   }
 
-  let { method, body, id, index, type, ...querystring } = params
+  let { method, body, id, index, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null && (id) != null) {
-    if (method == null) method = 'GET'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + encodeURIComponent(id) + '/' + '_source'
-  } else {
-    if (method == null) method = 'GET'
-    path = '/' + encodeURIComponent(index) + '/' + '_source' + '/' + encodeURIComponent(id)
-  }
+  if (method == null) method = 'GET'
+  path = '/' + encodeURIComponent(index) + '/' + '_source' + '/' + encodeURIComponent(id)
 
   // build request object
   const request = {

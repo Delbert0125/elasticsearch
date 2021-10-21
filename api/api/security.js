@@ -524,6 +524,48 @@ SecurityApi.prototype.enableUser = function securityEnableUserApi (params, optio
   return this.transport.request(request, options, callback)
 }
 
+SecurityApi.prototype.enrollKibana = function securityEnrollKibanaApi (params, options, callback) {
+  ;[params, options, callback] = normalizeArguments(params, options, callback)
+
+  let { method, body, ...querystring } = params
+  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
+
+  let path = ''
+  if (method == null) method = 'GET'
+  path = '/' + '_security' + '/' + 'enroll' + '/' + 'kibana'
+
+  // build request object
+  const request = {
+    method,
+    path,
+    body: null,
+    querystring
+  }
+
+  return this.transport.request(request, options, callback)
+}
+
+SecurityApi.prototype.enrollNode = function securityEnrollNodeApi (params, options, callback) {
+  ;[params, options, callback] = normalizeArguments(params, options, callback)
+
+  let { method, body, ...querystring } = params
+  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
+
+  let path = ''
+  if (method == null) method = 'GET'
+  path = '/' + '_security' + '/' + 'enroll' + '/' + 'node'
+
+  // build request object
+  const request = {
+    method,
+    path,
+    body: null,
+    querystring
+  }
+
+  return this.transport.request(request, options, callback)
+}
+
 SecurityApi.prototype.getApiKey = function securityGetApiKeyApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
@@ -1231,6 +1273,8 @@ Object.defineProperties(SecurityApi.prototype, {
   delete_user: { get () { return this.deleteUser } },
   disable_user: { get () { return this.disableUser } },
   enable_user: { get () { return this.enableUser } },
+  enroll_kibana: { get () { return this.enrollKibana } },
+  enroll_node: { get () { return this.enrollNode } },
   get_api_key: { get () { return this.getApiKey } },
   get_builtin_privileges: { get () { return this.getBuiltinPrivileges } },
   get_privileges: { get () { return this.getPrivileges } },

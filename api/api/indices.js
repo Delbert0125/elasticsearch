@@ -23,8 +23,8 @@
 /* eslint no-unused-vars: 0 */
 
 const { handleError, snakeCaseKeys, normalizeArguments, kConfigurationError } = require('../utils')
-const acceptedQuerystring = ['timeout', 'master_timeout', 'ignore_unavailable', 'allow_no_indices', 'expand_wildcards', 'pretty', 'human', 'error_trace', 'source', 'filter_path', 'index', 'fielddata', 'fields', 'query', 'request', 'wait_for_active_shards', 'include_type_name', 'run_expensive_tasks', 'flush', 'local', 'flat_settings', 'include_defaults', 'force', 'wait_if_ongoing', 'max_num_segments', 'only_expunge_deletes', 'create', 'cause', 'write_index_only', 'preserve_existing', 'order', 'detailed', 'active_only', 'dry_run', 'verbose', 'status', 'copy_settings', 'completion_fields', 'fielddata_fields', 'groups', 'level', 'types', 'include_segment_file_sizes', 'include_unloaded_segments', 'forbid_closed_indices', 'wait_for_completion', 'only_ancient_segments', 'explain', 'q', 'analyzer', 'analyze_wildcard', 'default_operator', 'df', 'lenient', 'rewrite', 'all_shards']
-const snakeCase = { masterTimeout: 'master_timeout', ignoreUnavailable: 'ignore_unavailable', allowNoIndices: 'allow_no_indices', expandWildcards: 'expand_wildcards', errorTrace: 'error_trace', filterPath: 'filter_path', waitForActiveShards: 'wait_for_active_shards', includeTypeName: 'include_type_name', runExpensiveTasks: 'run_expensive_tasks', flatSettings: 'flat_settings', includeDefaults: 'include_defaults', waitIfOngoing: 'wait_if_ongoing', maxNumSegments: 'max_num_segments', onlyExpungeDeletes: 'only_expunge_deletes', writeIndexOnly: 'write_index_only', preserveExisting: 'preserve_existing', activeOnly: 'active_only', dryRun: 'dry_run', copySettings: 'copy_settings', completionFields: 'completion_fields', fielddataFields: 'fielddata_fields', includeSegmentFileSizes: 'include_segment_file_sizes', includeUnloadedSegments: 'include_unloaded_segments', forbidClosedIndices: 'forbid_closed_indices', waitForCompletion: 'wait_for_completion', onlyAncientSegments: 'only_ancient_segments', analyzeWildcard: 'analyze_wildcard', defaultOperator: 'default_operator', allShards: 'all_shards' }
+const acceptedQuerystring = ['timeout', 'master_timeout', 'ignore_unavailable', 'allow_no_indices', 'expand_wildcards', 'pretty', 'human', 'error_trace', 'source', 'filter_path', 'index', 'fielddata', 'fields', 'query', 'request', 'wait_for_active_shards', 'run_expensive_tasks', 'flush', 'local', 'flat_settings', 'include_defaults', 'force', 'wait_if_ongoing', 'max_num_segments', 'only_expunge_deletes', 'create', 'cause', 'write_index_only', 'preserve_existing', 'order', 'detailed', 'active_only', 'dry_run', 'verbose', 'status', 'completion_fields', 'fielddata_fields', 'groups', 'level', 'types', 'include_segment_file_sizes', 'include_unloaded_segments', 'forbid_closed_indices', 'explain', 'q', 'analyzer', 'analyze_wildcard', 'default_operator', 'df', 'lenient', 'rewrite', 'all_shards']
+const snakeCase = { masterTimeout: 'master_timeout', ignoreUnavailable: 'ignore_unavailable', allowNoIndices: 'allow_no_indices', expandWildcards: 'expand_wildcards', errorTrace: 'error_trace', filterPath: 'filter_path', waitForActiveShards: 'wait_for_active_shards', runExpensiveTasks: 'run_expensive_tasks', flatSettings: 'flat_settings', includeDefaults: 'include_defaults', waitIfOngoing: 'wait_if_ongoing', maxNumSegments: 'max_num_segments', onlyExpungeDeletes: 'only_expunge_deletes', writeIndexOnly: 'write_index_only', preserveExisting: 'preserve_existing', activeOnly: 'active_only', dryRun: 'dry_run', completionFields: 'completion_fields', fielddataFields: 'fielddata_fields', includeSegmentFileSizes: 'include_segment_file_sizes', includeUnloadedSegments: 'include_unloaded_segments', forbidClosedIndices: 'forbid_closed_indices', analyzeWildcard: 'analyze_wildcard', defaultOperator: 'default_operator', allShards: 'all_shards' }
 
 function IndicesApi (transport, ConfigurationError) {
   this.transport = transport
@@ -644,27 +644,6 @@ IndicesApi.prototype.flush = function indicesFlushApi (params, options, callback
   return this.transport.request(request, options, callback)
 }
 
-IndicesApi.prototype.flushSynced = function indicesFlushSyncedApi (params, options, callback) {
-  ;[params, options, callback] = normalizeArguments(params, options, callback)
-
-  let { method, body, index, ...querystring } = params
-  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
-
-  let path = ''
-  if (method == null) method = body == null ? 'GET' : 'POST'
-  path = '/' + encodeURIComponent(index) + '/' + '_flush' + '/' + 'synced'
-
-  // build request object
-  const request = {
-    method,
-    path,
-    body: body || '',
-    querystring
-  }
-
-  return this.transport.request(request, options, callback)
-}
-
 IndicesApi.prototype.forcemerge = function indicesForcemergeApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
@@ -812,19 +791,13 @@ IndicesApi.prototype.getFieldMapping = function indicesGetFieldMappingApi (param
     return handleError(err, callback)
   }
 
-  let { method, body, fields, index, type, ...querystring } = params
+  let { method, body, fields, index, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null && (fields) != null) {
-    if (method == null) method = 'GET'
-    path = '/' + encodeURIComponent(index) + '/' + '_mapping' + '/' + encodeURIComponent(type) + '/' + 'field' + '/' + encodeURIComponent(fields)
-  } else if ((index) != null && (fields) != null) {
+  if ((index) != null && (fields) != null) {
     if (method == null) method = 'GET'
     path = '/' + encodeURIComponent(index) + '/' + '_mapping' + '/' + 'field' + '/' + encodeURIComponent(fields)
-  } else if ((type) != null && (fields) != null) {
-    if (method == null) method = 'GET'
-    path = '/' + '_mapping' + '/' + encodeURIComponent(type) + '/' + 'field' + '/' + encodeURIComponent(fields)
   } else {
     if (method == null) method = 'GET'
     path = '/' + '_mapping' + '/' + 'field' + '/' + encodeURIComponent(fields)
@@ -870,19 +843,13 @@ IndicesApi.prototype.getIndexTemplate = function indicesGetIndexTemplateApi (par
 IndicesApi.prototype.getMapping = function indicesGetMappingApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
-  let { method, body, index, type, ...querystring } = params
+  let { method, body, index, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null) {
-    if (method == null) method = 'GET'
-    path = '/' + encodeURIComponent(index) + '/' + '_mapping' + '/' + encodeURIComponent(type)
-  } else if ((index) != null) {
+  if ((index) != null) {
     if (method == null) method = 'GET'
     path = '/' + encodeURIComponent(index) + '/' + '_mapping'
-  } else if ((type) != null) {
-    if (method == null) method = 'GET'
-    path = '/' + '_mapping' + '/' + encodeURIComponent(type)
   } else {
     if (method == null) method = 'GET'
     path = '/' + '_mapping'
@@ -957,27 +924,6 @@ IndicesApi.prototype.getTemplate = function indicesGetTemplateApi (params, optio
   return this.transport.request(request, options, callback)
 }
 
-IndicesApi.prototype.getUpgrade = function indicesGetUpgradeApi (params, options, callback) {
-  ;[params, options, callback] = normalizeArguments(params, options, callback)
-
-  let { method, body, index, ...querystring } = params
-  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
-
-  let path = ''
-  if (method == null) method = 'GET'
-  path = '/' + encodeURIComponent(index) + '/' + '_upgrade'
-
-  // build request object
-  const request = {
-    method,
-    path,
-    body: null,
-    querystring
-  }
-
-  return this.transport.request(request, options, callback)
-}
-
 IndicesApi.prototype.migrateToDataStream = function indicesMigrateToDataStreamApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
@@ -993,6 +939,33 @@ IndicesApi.prototype.migrateToDataStream = function indicesMigrateToDataStreamAp
   let path = ''
   if (method == null) method = 'POST'
   path = '/' + '_data_stream' + '/' + '_migrate' + '/' + encodeURIComponent(name)
+
+  // build request object
+  const request = {
+    method,
+    path,
+    body: body || '',
+    querystring
+  }
+
+  return this.transport.request(request, options, callback)
+}
+
+IndicesApi.prototype.modifyDataStream = function indicesModifyDataStreamApi (params, options, callback) {
+  ;[params, options, callback] = normalizeArguments(params, options, callback)
+
+  // check required parameters
+  if (params.body == null) {
+    const err = new this[kConfigurationError]('Missing required parameter: body')
+    return handleError(err, callback)
+  }
+
+  let { method, body, ...querystring } = params
+  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
+
+  let path = ''
+  if (method == null) method = 'POST'
+  path = '/' + '_data_stream' + '/' + '_modify'
 
   // build request object
   const request = {
@@ -1136,40 +1109,21 @@ IndicesApi.prototype.putMapping = function indicesPutMappingApi (params, options
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
   // check required parameters
+  if (params.index == null) {
+    const err = new this[kConfigurationError]('Missing required parameter: index')
+    return handleError(err, callback)
+  }
   if (params.body == null) {
     const err = new this[kConfigurationError]('Missing required parameter: body')
     return handleError(err, callback)
   }
 
-  let { method, body, index, type, ...querystring } = params
+  let { method, body, index, ...querystring } = params
   querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
 
   let path = ''
-  if ((index) != null && (type) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + '_mapping'
-  } else if ((index) != null && (type) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + encodeURIComponent(index) + '/' + '_mapping' + '/' + encodeURIComponent(type)
-  } else if ((index) != null && (type) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + encodeURIComponent(index) + '/' + encodeURIComponent(type) + '/' + '_mappings'
-  } else if ((index) != null && (type) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + encodeURIComponent(index) + '/' + '_mappings' + '/' + encodeURIComponent(type)
-  } else if ((index) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + encodeURIComponent(index) + '/' + '_mapping'
-  } else if ((type) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + '_mappings' + '/' + encodeURIComponent(type)
-  } else if ((index) != null) {
-    if (method == null) method = 'PUT'
-    path = '/' + encodeURIComponent(index) + '/' + '_mappings'
-  } else {
-    if (method == null) method = 'PUT'
-    path = '/' + '_mapping' + '/' + encodeURIComponent(type)
-  }
+  if (method == null) method = 'PUT'
+  path = '/' + encodeURIComponent(index) + '/' + '_mapping'
 
   // build request object
   const request = {
@@ -1654,27 +1608,6 @@ IndicesApi.prototype.updateAliases = function indicesUpdateAliasesApi (params, o
   return this.transport.request(request, options, callback)
 }
 
-IndicesApi.prototype.upgrade = function indicesUpgradeApi (params, options, callback) {
-  ;[params, options, callback] = normalizeArguments(params, options, callback)
-
-  let { method, body, index, ...querystring } = params
-  querystring = snakeCaseKeys(acceptedQuerystring, snakeCase, querystring)
-
-  let path = ''
-  if (method == null) method = 'POST'
-  path = '/' + encodeURIComponent(index) + '/' + '_upgrade'
-
-  // build request object
-  const request = {
-    method,
-    path,
-    body: body || '',
-    querystring
-  }
-
-  return this.transport.request(request, options, callback)
-}
-
 IndicesApi.prototype.validateQuery = function indicesValidateQueryApi (params, options, callback) {
   ;[params, options, callback] = normalizeArguments(params, options, callback)
 
@@ -1725,7 +1658,6 @@ Object.defineProperties(IndicesApi.prototype, {
   exists_template: { get () { return this.existsTemplate } },
   exists_type: { get () { return this.existsType } },
   field_usage_stats: { get () { return this.fieldUsageStats } },
-  flush_synced: { get () { return this.flushSynced } },
   get_alias: { get () { return this.getAlias } },
   get_data_stream: { get () { return this.getDataStream } },
   get_field_mapping: { get () { return this.getFieldMapping } },
@@ -1733,8 +1665,8 @@ Object.defineProperties(IndicesApi.prototype, {
   get_mapping: { get () { return this.getMapping } },
   get_settings: { get () { return this.getSettings } },
   get_template: { get () { return this.getTemplate } },
-  get_upgrade: { get () { return this.getUpgrade } },
   migrate_to_data_stream: { get () { return this.migrateToDataStream } },
+  modify_data_stream: { get () { return this.modifyDataStream } },
   promote_data_stream: { get () { return this.promoteDataStream } },
   put_alias: { get () { return this.putAlias } },
   put_index_template: { get () { return this.putIndexTemplate } },
